@@ -30,7 +30,7 @@ dw1_previous = zeros(size(w1));
 dw2_previous = zeros(size(w2)); 
 figure;
 tic
-while error > 350
+while error > 750
     hidden = [1./(1+exp(-input * w1)) ones(size(input,1),1)];
     output = 1./(1+exp(-hidden * w2));
     output_error = desired_out - output;
@@ -57,8 +57,11 @@ while error > 350
             weighted_input = [val_features(i,:) 1]*w1;
             weighted_hidden = [1./(1+exp(-weighted_input)) 1]*w2;
             output = 1./(1+exp( - weighted_hidden));
-            output(output > 0.5) = 1;
-            output(output < 0.5) = 0;
+%             output(output > 0.5) = 1;
+%             output(output < 0.5) = 0;
+            [~, index] = max(output);
+            output = zeros(size(output));
+            output(index) = 1;
             if output == val_labels(i,:)
                right = right + 1;
             end
@@ -73,8 +76,25 @@ while error > 350
         xlabel('Epochs');
         ylabel('Hits');
         drawnow;
+        clc;
+        toc
     end
 end
 toc
+
+right = 0;
+for i = 1:size(val_features,1)
+    weighted_input = [val_features(i,:) 1]*w1;
+    weighted_hidden = [1./(1+exp(-weighted_input)) 1]*w2;
+    output = 1./(1+exp( - weighted_hidden));
+%             output(output > 0.5) = 1;
+%             output(output < 0.5) = 0;
+    [~, index] = max(output);
+    output = zeros(size(output));
+    output(index) = 1;
+    if output == val_labels(i,:)
+       right = right + 1;
+    end
+end
 percentage = 100*right/size(val_labels,1);
 disp([' Correctness ' num2str(percentage) '%']);
